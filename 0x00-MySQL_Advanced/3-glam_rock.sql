@@ -4,9 +4,9 @@
 
 -- Import this table dump: metal_bands.sql
 -- Column names must be: band_name and lifespan (in years)
-SELECT band_name, 
-       YEAR(MAX(year)) - YEAR(MIN(year)) AS lifespan
+SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
+
+SELECT origin, SUM(nb_fans) AS nb_fans
 FROM metal_bands
-WHERE style LIKE '%Glam rock%'
-GROUP BY band_name
-ORDER BY lifespan DESC;
+GROUP BY origin
+ORDER BY nb_fans DESC;
