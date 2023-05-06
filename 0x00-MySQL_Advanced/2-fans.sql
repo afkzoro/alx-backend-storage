@@ -4,6 +4,8 @@
 
 -- Import this table dump: metal_bands.sql.zip
 -- Column names must be: origin and nb_fans
+SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
+
 SELECT origin, SUM(nb_fans) AS nb_fans
 FROM metal_bands
 GROUP BY origin
