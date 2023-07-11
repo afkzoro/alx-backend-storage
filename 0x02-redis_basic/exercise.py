@@ -6,6 +6,26 @@ from typing import Union, Callable
 import functools
 
 
+def call_history(method: Callable) -> Callable:
+    """
+    Decorator that stores the history of inputs and outputs for a function.
+    """
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        inputs_key = f"{method.__qualname__}:inputs"
+        outputs_key = f"{method.__qualname__}:outputs"
+
+        input_data = str(args)
+        self._redis.rpush(inputs_key, input_data)
+
+        output = method(self, *args, **kwargs)
+        self._redis.rpush(outputs_key, output)
+
+        return output
+
+    return wrapper
+
+
 def count_calls(method: Callable) -> Callable:
     """
     Decorator that counts the number of times a method is called.
