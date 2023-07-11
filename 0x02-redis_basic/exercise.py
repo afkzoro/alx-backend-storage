@@ -6,23 +6,15 @@ from typing import Union, Callable
 import functools
 
 
-def call_history(method: Callable) -> Callable:
+def count_calls(method: Callable) -> Callable:
+    """
+    Decorator that counts the number of times a method is called.
+    """
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
-        input_key = method.__qualname__ + ":inputs"
-        output_key = method.__qualname__ + ":outputs"
-
-        # Store input arguments
-        self._redis.rpush(input_key, str(args))
-
-        # Execute the wrapped function to retrieve the output
-        output = method(self, *args, **kwargs)
-
-        # Store the output
-        self._redis.rpush(output_key, output)
-
-        return output
-
+        key = method.__qualname__
+        self._redis.incr(key)
+        return method(self, *args, **kwargs)
     return wrapper
 
 
@@ -31,12 +23,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
-    @call_history
-    def store(self, data):
-        key = str(uuid.uuid4())
-        self._redis.set(key, str(data))
-        return key
-
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """_summary_
 
@@ -89,18 +76,3 @@ class Cache:
             Union[int, None]: _description_
         """
         return self.get(key, fn=int)
-
-    def replay(method):
-        redis_client = redis.Redis()
-        input_key = method.__qualname__ + ":inputs"
-        output_key = method.__qualname__ + ":outputs"
-
-        inputs = redis_client.lrange(input_key, 0, -1)
-        outputs = redis_client.lrange(output_key, 0, -1)
-
-        print(f"{method.__qualname__} was called {len(inputs)} times:")
-
-        for input_args, output in zip(inputs, outputs):
-            input_args = input_args.decode()
-            output = output.decode()
-            print(f"{method.__qualname__}(*{input_args}) -> {output}")
