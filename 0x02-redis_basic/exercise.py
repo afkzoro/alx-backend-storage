@@ -116,3 +116,6 @@ class Cache:
             Union[int, None]: _description_
         """
         return self.get(key, fn=int)
+
+
+cache = Cache()
