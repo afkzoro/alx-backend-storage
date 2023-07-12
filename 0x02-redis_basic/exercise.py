@@ -20,12 +20,10 @@ def replay(func: Callable) -> None:
     outputs = cache._redis.lrange(outputs_key, 0, -1)
 
     print(f"{func.__qualname__} was called {len(inputs)} times:")
-    for i, input_data in enumerate(inputs):
-        output_data = outputs[i]
-        print(
-            f"{func.__qualname__}(*{input_data.decode('utf-8')}) "
-            f"-> {output_data.decode('utf-8')}"
-        )
+    for input_data, output_data in zip(inputs, outputs):
+        input_str = input_data.decode("utf-8")
+        output_str = output_data.decode("utf-8")
+        print(f"{func.__qualname__}(*{input_str}) -> {output_str}")
 
 
 def call_history(method: Callable) -> Callable:
@@ -118,3 +116,10 @@ class Cache:
             Union[int, None]: _description_
         """
         return self.get(key, fn=int)
+
+
+cache = Cache()
+cache.store("foo")
+cache.store("bar")
+cache.store(42)
+replay(cache.store)
