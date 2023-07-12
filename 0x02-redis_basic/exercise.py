@@ -23,7 +23,7 @@ def replay(func: Callable) -> None:
     for input_data, output_data in zip(inputs, outputs):
         input_str = input_data.decode("utf-8")
         output_str = output_data.decode("utf-8")
-        print(f"{func.__qualname__}(*{input_str}) -> {output_str}")
+        print(f"{func.__qualname__}(*{input_str})")
 
 
 def call_history(method: Callable) -> Callable:
@@ -116,10 +116,3 @@ class Cache:
             Union[int, None]: _description_
         """
         return self.get(key, fn=int)
-
-
-cache = Cache()
-cache.store("foo")
-cache.store("bar")
-cache.store(42)
-replay(cache.store)
