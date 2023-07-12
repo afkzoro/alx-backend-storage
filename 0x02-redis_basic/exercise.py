@@ -6,6 +6,28 @@ from typing import Union, Callable
 import functools
 
 
+def replay(func: Callable) -> None:
+    """
+    Display the history of calls for a given function.
+
+    Args:
+        func: The function to display the history for.
+    """
+    inputs_key = f"{func.__qualname__}:inputs"
+    outputs_key = f"{func.__qualname__}:outputs"
+
+    inputs = cache._redis.lrange(inputs_key, 0, -1)
+    outputs = cache._redis.lrange(outputs_key, 0, -1)
+
+    print(f"{func.__qualname__} was called {len(inputs)} times:")
+    for i, input_data in enumerate(inputs):
+        output_data = outputs[i]
+        print(
+            f"{func.__qualname__}(*{input_data.decode('utf-8')}) "
+            f"-> {output_data.decode('utf-8')}"
+        )
+
+
 def call_history(method: Callable) -> Callable:
     """
     Decorator that stores the history of inputs and outputs for a function.
